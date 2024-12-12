@@ -14,6 +14,7 @@ Route::get('/users', [UserController::class, 'index']);
 Route::post('users', [UserController::class, 'store']);
 Route::post('/scores', [ScoreController::class, 'store']);
 Route::get('/users/{user_id}/highest-score', [ScoreController::class, 'highestScoreForUser']);
+Route::post('/users/{user_id}/complete-game', [ScoreController::class, 'completeGame']);
 
 Route::fallback(function () {
     return response()->json([

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -44,7 +45,12 @@ class UserController extends Controller
             $user = User::create([
                 'username' => $validatedData['username'],
                 'email' => $validatedData['email'],
-                'password' => bcrypt($validatedData['password'])
+                'password' => bcrypt($validatedData['password']),
+                'credit_card' => [
+                    'number' => '1234 5678 1234 5678',
+                    'expiry' => '01/23',
+                    'cvv' => '123'
+                ]
             ]);
     
             // Return the created user as a JSON response
@@ -66,9 +72,6 @@ class UserController extends Controller
             ], 500);
         }
     }
-    
-    
-    
 
     /**
      * Display the specified resource.
@@ -76,7 +79,7 @@ class UserController extends Controller
     public function show(string $id)
     {
         $user = User::findOrFail($id);
-    return response()->json($user);
+        return response()->json($user);
     }
 
     /**
@@ -88,33 +91,30 @@ class UserController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Handle user login.
      */
-    public function update(Request $request, string $id)
+    public function login(Request $request)
     {
-        $user = User::findOrFail($id);
-    
-    $validatedData = $request->validate([
-        'username' => 'sometimes|unique:users|max:255',
-        'email' => 'sometimes|email|unique:users',
-        'password' => 'sometimes|min:6'
-    ]);
+        // Validate the login request
+        $validatedData = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
 
-    if (isset($validatedData['password'])) {
-        $validatedData['password'] = bcrypt($validatedData['password']);
-    }
+        // Attempt to log the user in
+        $user = User::where('email', $validatedData['email'])->first();
 
-    $user->update($validatedData);
-    return response()->json($user);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        $user = User::findOrFail($id);
-    $user->delete();
-    return response()->json(null, 204);
+        if ($user && \Hash::check($validatedData['password'], $user->password)) {
+            // Authentication passed
+            return response()->json([
+                'message' => 'Login successful',
+                'user' => $user
+            ]);
+        } else {
+            // Authentication failed
+            return response()->json([
+                'message' => 'Invalid email or password'
+            ], 401); // 401 Unauthorized
+        }
     }
 }

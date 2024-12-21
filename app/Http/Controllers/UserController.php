@@ -28,6 +28,38 @@ class UserController extends Controller
         //
     }
 
+
+/**
+ * Update the specified resource in storage.
+ */
+public function update(Request $request, string $id)
+{
+    try {
+        // Validate the incoming request
+        $validatedData = $request->validate([
+            'username' => 'sometimes|required|max:255|unique:users,username,' . $id,
+            'email' => 'sometimes|required|email|unique:users,email,' . $id,
+            'password' => 'nullable|min:6'
+        ]);
+
+        $user = User::findOrFail($id); // Find the user
+        if (isset($validatedData['password'])) {
+            $validatedData['password'] = bcrypt($validatedData['password']); // Encrypt the password
+        }
+
+        $user->update($validatedData); // Update the user data
+        return response()->json($user); // Return updated user data
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'message' => 'Validation error',
+            'errors' => $e->errors()
+        ], 422); // 422 Unprocessable Entity
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Failed to update user'], 500);
+    }
+}
+
+
     /**
      * Store a newly created resource in storage.
      */
@@ -73,16 +105,31 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $user = User::findOrFail($id);
+    
+public function show(string $id)
+{
+    try {
+        $user = User::findOrFail($id); // Retrieve the user by ID
         return response()->json($user);
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'User not found'], 404); // Return 404 if not found
     }
+}
 
     /**
+ * Remove the specified resource from storage.
+ */
+public function destroy(string $id)
+{
+    try {
+        $user = User::findOrFail($id); // Find the user
+        $user->delete(); // Delete the user
+        return response()->json(['message' => 'User deleted successfully']);
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Failed to delete user'], 500);
+    }
+}
+/**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)

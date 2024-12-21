@@ -18,6 +18,9 @@ Route::get('/users/{user_id}/highest-score', [ScoreController::class, 'highestSc
 Route::post('/users/{user_id}/complete-game', [ScoreController::class, 'completeGame']);
 Route::get('/topscores', [ScoreController::class, 'topThreeScores']);
 Route::get('/users/{user_id}/games-played', [ScoreController::class, 'gamesPlayed']); // New route for games played
+Route::get('/users/{id}', [UserController::class, 'show']); // Retrieve user profile by ID
+Route::put('/users/{id}', [UserController::class, 'update']); // Update user profile by ID
+Route::delete('/users/{id}', [UserController::class, 'destroy']); // Delete user profile by ID
 
 
 Route::fallback(function () {

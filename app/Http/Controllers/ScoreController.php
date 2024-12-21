@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Score;
-use App\Models\User; 
+use App\Models\User; // Import User model
 use Illuminate\Http\Request;
 
 class ScoreController extends Controller
